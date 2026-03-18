@@ -28,6 +28,9 @@ export async function PATCH(
     if (body.scope !== undefined) {
       updateData.scope = body.scope
     }
+    if (body.job_title !== undefined) {
+      updateData.job_title = body.job_title
+    }
 
     const { data, error } = await supabase
       .from('rmc_claims')

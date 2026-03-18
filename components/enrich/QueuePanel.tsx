@@ -1,12 +1,13 @@
 'use client'
 
-import { CheckCircle, AlertCircle, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/Button'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 
 interface QueueItem {
   id: string
+  source_resume_id: string
   raw_text: string
   company_name: string | null
+  job_title: string | null
 }
 
 interface QueuePanelProps {
@@ -14,9 +15,6 @@ interface QueuePanelProps {
   selectedId: string | null
   onSelect: (item: QueueItem) => void
   loading: boolean
-  onBatchEnrich: () => void
-  batchRunning: boolean
-  batchProgress: string
 }
 
 export function QueuePanel({
@@ -24,9 +22,6 @@ export function QueuePanel({
   selectedId,
   onSelect,
   loading,
-  onBatchEnrich,
-  batchRunning,
-  batchProgress,
 }: QueuePanelProps) {
   const isArray = Array.isArray(items)
   const itemList = isArray ? items : []
@@ -72,30 +67,20 @@ export function QueuePanel({
                   }
                 `}
               >
-                <p className="font-medium text-accent text-sm truncate">
+                <p className="font-semibold text-accent text-sm truncate">
                   {item.company_name || 'Unknown'}
                 </p>
+                {item.job_title && (
+                  <p className="text-xs text-text-muted italic truncate">
+                    {item.job_title}
+                  </p>
+                )}
                 <p className="text-xs text-text-muted mt-1 line-clamp-2">
                   {item.raw_text}
                 </p>
               </button>
             ))}
           </div>
-        )}
-      </div>
-
-      <div className="p-4 border-t border-bg-border">
-        {batchRunning ? (
-          <p className="text-xs text-text-muted text-center">{batchProgress}</p>
-        ) : (
-          <Button
-            variant="ghost"
-            className="w-full"
-            onClick={onBatchEnrich}
-            disabled={loading || hasError || itemList.length === 0}
-          >
-            Batch Enrich All
-          </Button>
         )}
       </div>
     </div>

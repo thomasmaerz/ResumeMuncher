@@ -5,5 +5,6 @@ export interface Message {
 
 export interface AIProvider {
   chat(messages: Message[]): Promise<string>
+  streamChat(messages: Message[]): AsyncGenerator<string>
   extract(messages: Message[]): Promise<string>
 }

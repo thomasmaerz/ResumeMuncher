@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const supabase = createServerClient()
@@ -20,8 +22,10 @@ export async function GET(request: NextRequest) {
       .from('rmc_experience_staging')
       .select(`
         id,
+        source_resume_id,
         raw_text,
-        company_name_raw
+        company_name_raw,
+        job_title
       `)
       .eq('is_duplicate', false)
       .order('created_at', { ascending: true })
@@ -45,9 +49,14 @@ export async function GET(request: NextRequest) {
       id: item.id,
       raw_text: item.raw_text,
       company_name: item.company_name_raw || 'Unknown',
+      job_title: item.job_title || null,
     }))
 
-    return NextResponse.json(formatted)
+    return NextResponse.json(formatted, {
+      headers: {
+        'Cache-Control': 'no-store, max-age=0',
+      },
+    })
   } catch (error) {
     console.error('Queue error:', error)
     return NextResponse.json(

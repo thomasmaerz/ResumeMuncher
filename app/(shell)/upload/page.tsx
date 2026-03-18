@@ -1,4 +1,5 @@
 import { UploadZone } from '@/components/upload/UploadZone'
+import { CsvFormatGuide } from '@/components/upload/CsvFormatGuide'
 
 export default function UploadPage() {
   return (
@@ -10,7 +11,11 @@ export default function UploadPage() {
         </p>
       </div>
 
-      <UploadZone />
+      <div className="space-y-6">
+        <CsvFormatGuide />
+
+        <UploadZone />
+      </div>
     </div>
   )
 }

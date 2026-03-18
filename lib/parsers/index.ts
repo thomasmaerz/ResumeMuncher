@@ -20,4 +20,4 @@ export async function extractText(
 
 export { extractPdfText } from './pdf'
 export { extractDocxText } from './docx'
-export { extractCsvText } from './csv'
+export { extractCsvText, parseStructuredCsv } from './csv'

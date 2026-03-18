@@ -54,6 +54,25 @@ export class GeminiProvider implements AIProvider {
     return this.run('gemini-3-flash-preview', messages)
   }
 
+  async *streamChat(messages: Message[]): AsyncGenerator<string> {
+    const model = this.client.getGenerativeModel({ model: 'gemini-3-flash-preview' })
+    const mappedMessages = this.mapToContent(messages)
+    
+    const chat = model.startChat({
+      history: mappedMessages.slice(0, -1),
+    })
+    
+    const lastMessage = mappedMessages[mappedMessages.length - 1]
+    const result = await chat.sendMessageStream(lastMessage.parts as Part[])
+    
+    for await (const chunk of result.stream) {
+      const chunkText = chunk.text()
+      if (chunkText) {
+        yield chunkText
+      }
+    }
+  }
+
   async extract(messages: Message[]): Promise<string> {
     return this.run('gemini-3-flash-preview', messages)
   }

@@ -7,4 +7,5 @@ logs/
 .DS_Store
 dist/
 build/
-Resumes/
+exampleresumes/
+AGENTS.md
