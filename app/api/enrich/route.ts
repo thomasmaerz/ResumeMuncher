@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const ai = getAIProvider()
 
     const body = await request.json()
-    const { stagingId, conversationHistory, userMessage, action, context, rawText } = body
+    const { stagingId, conversationHistory, userMessage, action, rawText } = body
 
     // Handle skip action
     if (action === 'skip') {
@@ -123,8 +123,8 @@ export async function POST(request: NextRequest) {
         finalRawText = stagingRow.raw_text
       }
 
-      const systemPrompt = buildAgentSystemPrompt(context)
-      const firstPrompt = buildFirstTurnPrompt(finalRawText, context)
+      const systemPrompt = buildAgentSystemPrompt()
+      const firstPrompt = buildFirstTurnPrompt(finalRawText)
 
       const messages: Message[] = [
         { role: 'system', content: systemPrompt },

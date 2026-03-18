@@ -12,23 +12,28 @@ export class GeminiProvider implements AIProvider {
 
   private mapToContent(messages: Message[]): Content[] {
     const mapped: Content[] = []
-    
+    let systemContent = ''
+
     for (const msg of messages) {
       if (msg.role === 'system') {
-        if (mapped.length === 0 || mapped[0].role !== 'user') {
-          mapped.unshift({ role: 'user', parts: [{ text: msg.content }] })
-        } else {
-          const existingParts = mapped[0].parts as Part[]
-          const newText = msg.content + '\n\n' + (existingParts[0]?.text || '')
-          mapped[0] = { role: 'user', parts: [{ text: newText }] }
-        }
+        systemContent += (systemContent ? '\n\n' : '') + msg.content
       } else if (msg.role === 'assistant') {
         mapped.push({ role: 'model', parts: [{ text: msg.content }] as Part[] })
       } else {
-        mapped.push({ role: 'user', parts: [{ text: msg.content }] as Part[] })
+        let text = msg.content
+        if (systemContent && mapped.length === 0) {
+          text = `${systemContent}\n\n${text}`
+          systemContent = ''
+        }
+        mapped.push({ role: 'user', parts: [{ text }] as Part[] })
       }
     }
-    
+
+    // Fallback if there was only a system message
+    if (systemContent && mapped.length === 0) {
+      mapped.push({ role: 'user', parts: [{ text: systemContent }] as Part[] })
+    }
+
     return mapped
   }
 

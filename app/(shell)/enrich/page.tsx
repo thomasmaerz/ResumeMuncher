@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { QueuePanel } from '@/components/enrich/QueuePanel'
 import { ChatPanel } from '@/components/enrich/ChatPanel'
 import { Message } from '@/lib/ai'
@@ -28,11 +27,6 @@ export default function EnrichPage() {
   const [aiLoading, setAiLoading] = useState(false)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Context for enrichment agent
-  const [contextSkills, setContextSkills] = useState<string[]>([])
-  const [contextJobTitles, setContextJobTitles] = useState<string[]>([])
-  const [contextResumeId, setContextResumeId] = useState<string | null>(null)
-
   const fetchQueue = useCallback(async () => {
     try {
       const res = await fetch('/api/enrich/queue', { cache: 'no-store' })
@@ -42,47 +36,6 @@ export default function EnrichPage() {
       console.error('Failed to fetch queue:', error)
     }
   }, [])
-
-  const fetchContext = useCallback(async (resumeId?: string) => {
-    const supabase = createClient()
-
-    let skillsQuery = supabase.from('rmc_skills').select('skill')
-    if (resumeId) {
-      skillsQuery = skillsQuery.contains('source_resume_ids', [resumeId])
-    }
-
-    let titlesQuery = supabase
-      .from('rmc_experience_staging')
-      .select('job_title')
-      .not('job_title', 'is', null)
-
-    if (resumeId) {
-      titlesQuery = titlesQuery.eq('source_resume_id', resumeId)
-    }
-
-    const [skillsRes, stagingRes] = await Promise.all([skillsQuery, titlesQuery])
-
-    if (skillsRes.data) {
-      setContextSkills(skillsRes.data.map((s: any) => s.skill))
-    }
-
-    if (stagingRes.data) {
-      const uniqueTitles = [
-        ...new Set(
-          stagingRes.data
-            .map((r: any) => r.job_title)
-            .filter(Boolean) as string[]
-        ),
-      ]
-      setContextJobTitles(uniqueTitles)
-    }
-    setContextResumeId(resumeId || 'global')
-  }, [])
-
-  // Fetch global context on mount
-  useEffect(() => {
-    fetchContext()
-  }, [fetchContext])
 
   useEffect(() => {
     fetchQueue()
@@ -109,25 +62,9 @@ export default function EnrichPage() {
     setAiLoading(true)
 
     try {
-      // If we don't have context for this resume yet, fetch it
-      if (item.source_resume_id !== contextResumeId) {
-        await fetchContext(item.source_resume_id)
-      }
-
       const body: Record<string, any> = { 
         stagingId: item.id,
         rawText: item.raw_text
-      }
-
-      // Pass context on first turn
-      if (contextSkills.length > 0 || contextJobTitles.length > 0) {
-        body.context = {}
-        if (contextSkills.length > 0) {
-          body.context.skills = contextSkills
-        }
-        if (contextJobTitles.length > 0) {
-          body.context.jobTitles = contextJobTitles
-        }
       }
 
       const res = await fetch('/api/enrich', {
