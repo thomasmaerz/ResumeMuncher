@@ -1,6 +1,6 @@
 const { createHash } = require('crypto');
 
-function normalizeBullet(text) {
+function normalizeBullet(text: string): string {
   return text
     .toLowerCase()
     .replace(/[^\w\s]/g, '')
@@ -8,7 +8,7 @@ function normalizeBullet(text) {
     .trim();
 }
 
-function bulletHash(text) {
+function bulletHash(text: string): string {
   const normalized = normalizeBullet(text);
   return createHash('sha256').update(normalized).digest('hex');
 }
