@@ -3,7 +3,7 @@
 set -e
 
 echo "=============================================="
-echo "ResumeMuncher Interactive Bootstrap"
+echo "Backgrndy Interactive Bootstrap"
 echo "=============================================="
 
 # Check Node.js

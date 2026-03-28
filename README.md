@@ -1,100 +1,81 @@
-# ResumeMuncher
-AI-powered resume parsing and experience enrichment tool. Upload your tailored resumes in PDF, DOCX, or CSV format — Gemini 3 Flash extracts and classifies every experience entry, skill, education record, and credential into a structured Supabase database.
-An interactive AI agent then works through your experience entries one at a time, helping you produce strong, properly sized resume bullets with quantified metrics, tech stack, and scope — following STAR order (Situation, Task, Action, Result). The agent asks focused questions rather than open-ended ones, never invents information, and targets a one-line output sized for a standard resume.
-The resulting dataset of atomic experience claims can be used to generate highly accurate, tailored resumes on demand.
+# 📄 Backgrndy
 
-## Features
+> An AI-powered resume parser and enrichment pipeline that extracts, deduplicates, and structures data into atomic claims using Next.js, Supabase, and Google Gemini.
 
-Gemini-powered parsing — no rule-based section detection. Gemini 3 Flash reads the raw resume and returns structured JSON with four categories: Experience, Skills, Education, and Credentials
-Normalized data model — companies, experience entries, skills, education, and credentials stored in separate deduplicated tables with full provenance back to source resumes
-Interactive enrichment agent — STAR-ordered conversation, opens with an example rewrite, asks one question at a time, enforces 110–125 character output for one-line resume fit
-Context-aware suggestions — agent uses your existing skills list and job titles as silent context when making suggestions
-Library view — browse and edit all extracted experience claims, skills tag cloud, and education/credentials grouped by type
-Modular — core parsing and staging logic exposed as a standalone module importable into other Next.js applications
+![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
+![Supabase](https://img.shields.io/badge/Supabase-Database-3ECF8E?logo=supabase)
+![Gemini](https://img.shields.io/badge/Google_Gemini-AI-4285F4?logo=google)
+![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker)
 
-## Stack
+Backgrndy ingests documents, extracts bullet points, normalizes the data, deduplicates entries using hash-based logic, and leverages AI to enrich and classify atomic claims into a structured dataset.
 
-Next.js 14 App Router
-Supabase (shared project — safe alongside other apps via rmc_ table prefix)
-Gemini 3 Flash
-Tailwind CSS, lucide-react
-Docker-first, runs locally or on AWS
+## ✨ Features
+- **Gemini-Powered Parsing:** No rule-based section detection. Gemini 3 Flash reads raw resumes and extracts structured JSON for Experience, Skills, Education, and Credentials.
+- **Normalized Data Model:** Companies, entries, and skills are stored in deduplicated tables with full provenance back to source documents.
+- **Interactive Enrichment Agent:** STAR-ordered conversation (Situation, Task, Action, Result) helps produce high-impact resume bullets with quantified metrics.
+- **Context-Aware Suggestions:** The agent uses your existing skills and job titles as silent context for precise rewrites.
+- **Modular Architecture:** Core parsing and staging logic is exposed as a standalone module for integration into other Next.js apps.
 
-## Prerequisites
+## 🚀 Quick Start
 
+### Prerequisites
 - Docker and Docker Compose
-- Supabase project
-- Gemini API key
+- Supabase Project (safe alongside other apps via `rmc_` table prefix)
+- Google Gemini API Key
 
-## Setup
+### Setup
 
-1. **Clone the repository**
-
-2. **Copy environment variables**
+1. **Clone & Configure**
    ```bash
    cp .env.local.example .env.local
    ```
-
-3. **Fill in your credentials** in `.env.local`:
+   Add your credentials to `.env.local`:
    - `NEXT_PUBLIC_SUPABASE_URL` — Your Supabase project URL
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY` — Supabase anon key
    - `SUPABASE_SERVICE_ROLE_KEY` — Supabase service role key
    - `GEMINI_API_KEY` — Google Gemini API key
 
-4. **Run database migrations**
-   
-   Option A - Supabase CLI:
+2. **Database Migrations**
+   Initialize your Supabase tables. You can use the CLI or run the files in `supabase/migrations/` in order via your Supabase SQL Editor:
    ```bash
    npx supabase db push
    ```
-   
-   Option B - SQL Editor:
-   1. Go to your Supabase project's SQL Editor
-   2. Run the SQL files in `supabase/migrations/` in order:
-      - `001_rm_source_resumes.sql`
-      - `002_rm_bullets_staging.sql`
-      - `003_rm_claims.sql`
-      - `004_rm_skills_intros.sql`
 
-5. **Start the development server**
+3. **Start Development Server**
    ```bash
    make dev
    ```
+   The application will be available at `http://localhost:3000`.
 
-   The app will be available at `http://localhost:3000`
+## 🛠️ Docker Commands
 
-## Docker Commands
-
-- `make dev` — Start with hot reload (development)
+We use a `Makefile` to simplify Docker operations:
+- `make dev` — Start with hot reload for development
 - `make build` — Build production container
 - `make test` — Run unit tests
-- `make down` — Stop containers
-- `docker compose up --build` — Build and start production container
+- `make down` — Stop and remove containers
+- `docker compose up --build` — Standard Docker command to build and start
 
-## Project Structure
+## 💻 Usage
 
-```
-resumemuncher/
+1. **Upload:** Navigate to `/upload` and drop your PDF, DOCX, or CSV files.
+2. **Enrich:** Go to `/enrich` to review the extracted bullet points and trigger AI enrichment via the interactive agent.
+3. **Library:** Browse your full dataset of atomic experience claims and skills in the Library view.
+
+## 📁 Project Structure
+
+```text
+backgrndy/
 ├── app/                     # Next.js 14 App Router
-│   ├── api/
-│   │   ├── ingest/          # File upload + parse endpoints
-│   │   └── enrich/          # AI enrichment endpoints
-│   ├── upload/              # Upload UI page
-│   └── enrich/              # Enrichment agent UI page
+│   ├── (shell)/             # Main UI pages (Upload, Enrich, Library)
+│   └── api/                 # Ingestion & Enrichment endpoints
 ├── lib/
 │   ├── parsers/             # PDF, DOCX, CSV parsers
-│   ├── normalizer/          # Bullet → structured record logic
+│   ├── gemini-parse/        # Gemini-specific parsing logic
 │   ├── dedup/               # Hash-based dedup logic
-│   ├── supabase/            # Supabase client
-│   ├── ai/                  # Swappable AI provider
-│   └── config.ts            # Environment validation
+│   └── ai/                  # AI provider abstraction
+├── components/              # UI components (Shell, Enrich, Upload)
 ├── supabase/
-│   └── migrations/           # SQL migration files
+│   └── migrations/          # SQL database schemas
 └── Makefile
 ```
-
-## Usage
-
-1. **Upload resumes** — Go to `/upload` and drag & drop PDF, DOCX, or CSV files
-2. **Enrich bullets** — Go to `/enrich` to review and enrich extracted bullet points with AI
-3. **Export claims** — Enriched atomic claims are stored in the `rm_claims` table
